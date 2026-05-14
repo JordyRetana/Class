@@ -27,7 +27,11 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
-app.use(cors({ origin: true }));
+const allowedOrigin = process.env.FRONTEND_ORIGIN;
+
+app.use(cors({
+  origin: allowedOrigin ? allowedOrigin.split(",").map((origin) => origin.trim()) : true
+}));
 app.use(express.json({ limit: "900kb" }));
 
 seedExamples();

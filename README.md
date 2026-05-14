@@ -87,6 +87,23 @@ $env:VITE_API_URL="http://IP-DEL-PROFESOR:4000/api"
 npm run dev -- --host 0.0.0.0
 ```
 
+## Usar desde redes distintas
+
+Para estudiantes fuera de la misma red, no sirve `localhost` ni la IP local de la computadora del profesor. Debe publicar la app en internet.
+
+La guia completa esta en:
+
+```txt
+DEPLOYMENT.md
+```
+
+Resumen:
+
+- Suba el repo a GitHub.
+- Publique el backend en Render, Railway o un VPS.
+- Publique el frontend en Vercel o Netlify.
+- Configure `VITE_API_URL` en el frontend con la URL publica del backend.
+
 ## Flujo de uso
 
 1. El profesor entra en la vista Profesor.

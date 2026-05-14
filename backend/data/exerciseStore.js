@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
 
-const DATA_DIR = path.join(__dirname, "storage");
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "storage");
 const DATA_FILE = path.join(DATA_DIR, "classrooms.json");
 
 const SUPPORTED_LANGUAGES = [
