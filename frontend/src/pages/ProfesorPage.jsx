@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Clipboard,
   LogIn,
+  LogOut,
   Plus,
   RefreshCw,
   Save,
@@ -385,6 +386,20 @@ function ProfesorPage({ session, onSessionChange }) {
     navigator.clipboard?.writeText(classroom?.code || "");
   }
 
+  function handleLogout() {
+    onSessionChange(null);
+    setClassroom(null);
+    setSubmissions([]);
+    setEditingId(null);
+    setForm(emptyForm);
+    setJoinForm((current) => ({
+      ...current,
+      classroomCode: "",
+      teacherPin: ""
+    }));
+    setStatus(null);
+  }
+
   if (!classroom) {
     return (
       <section className="workspace two-columns">
@@ -492,6 +507,11 @@ function ProfesorPage({ session, onSessionChange }) {
         <button className="ghost-button full-button" type="button" onClick={startNewExercise}>
           <Plus size={16} />
           Nuevo ejercicio
+        </button>
+
+        <button className="ghost-button full-button" type="button" onClick={handleLogout}>
+          <LogOut size={16} />
+          Cerrar sesion
         </button>
 
         <div className="list-block">
