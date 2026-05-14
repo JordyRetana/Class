@@ -2,8 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "storage");
-const DATA_FILE = path.join(DATA_DIR, "classrooms.json");
+const REQUESTED_DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "storage");
+const FALLBACK_DATA_DIR = path.join(__dirname, "storage");
+let activeDataDir = REQUESTED_DATA_DIR;
 
 const SUPPORTED_LANGUAGES = [
   "javascript",
@@ -52,12 +53,27 @@ function generatePin() {
 }
 
 function ensureDataFile() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(activeDataDir)) {
+      fs.mkdirSync(activeDataDir, { recursive: true });
+    }
+  } catch (error) {
+    if (activeDataDir === FALLBACK_DATA_DIR) throw error;
+
+    console.warn(
+      `No se pudo usar DATA_DIR=${activeDataDir}. Usando almacenamiento local temporal.`
+    );
+    activeDataDir = FALLBACK_DATA_DIR;
+
+    if (!fs.existsSync(activeDataDir)) {
+      fs.mkdirSync(activeDataDir, { recursive: true });
+    }
   }
 
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ classrooms: [] }, null, 2));
+  const dataFile = path.join(activeDataDir, "classrooms.json");
+
+  if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, JSON.stringify({ classrooms: [] }, null, 2));
   }
 }
 
@@ -68,14 +84,14 @@ function saveClassrooms() {
     classrooms: Array.from(classrooms.values())
   };
 
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  fs.writeFileSync(path.join(activeDataDir, "classrooms.json"), JSON.stringify(data, null, 2));
 }
 
 function loadClassrooms() {
   ensureDataFile();
 
   try {
-    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+    const parsed = JSON.parse(fs.readFileSync(path.join(activeDataDir, "classrooms.json"), "utf8"));
     classrooms.clear();
 
     for (const classroom of parsed.classrooms || []) {
