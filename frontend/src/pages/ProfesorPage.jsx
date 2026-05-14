@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Clipboard,
+  Download,
   LogIn,
   LogOut,
   Plus,
   RefreshCw,
   Save,
   Trash2,
+  Upload,
   Wand2
 } from "lucide-react";
 import CodeEditor from "../components/CodeEditor";
@@ -115,6 +117,44 @@ const templates = {
   }
 };
 
+const sampleImportExercises = [
+  {
+    title: "HTML: titulo y parrafo",
+    description:
+      "Cree una pagina con un titulo h1 que diga Mi primera pagina y un parrafo que diga Estoy aprendiendo HTML.",
+    language: "html",
+    evaluationType: "contains_keywords",
+    starterCode: "<!-- Escriba su HTML aqui -->\n",
+    referenceCode:
+      "<h1>Mi primera pagina</h1>\n<p>Estoy aprendiendo HTML</p>",
+    keywords: ["<h1>", "Mi primera pagina", "<p>", "Estoy aprendiendo HTML"],
+    teacherNotes: "Ejercicio basico de estructura HTML."
+  },
+  {
+    title: "HTML: lista de compras",
+    description:
+      "Cree una lista desordenada con tres productos: Pan, Leche y Huevos.",
+    language: "html",
+    evaluationType: "contains_keywords",
+    starterCode: "<!-- Cree la lista aqui -->\n",
+    referenceCode:
+      "<ul>\n  <li>Pan</li>\n  <li>Leche</li>\n  <li>Huevos</li>\n</ul>",
+    keywords: ["<ul>", "<li>", "Pan", "Leche", "Huevos", "</ul>"],
+    teacherNotes: "Practica listas desordenadas."
+  },
+  {
+    title: "HTML: enlace basico",
+    description:
+      "Cree un enlace que lleve a https://www.google.com y que muestre el texto Ir a Google.",
+    language: "html",
+    evaluationType: "contains_keywords",
+    starterCode: "<!-- Cree el enlace aqui -->\n",
+    referenceCode: '<a href="https://www.google.com">Ir a Google</a>',
+    keywords: ["<a", 'href="https://www.google.com"', "Ir a Google", "</a>"],
+    teacherNotes: "Practica enlaces con href."
+  }
+];
+
 const emptyForm = {
   title: templates.javascript.title,
   description: templates.javascript.description,
@@ -136,6 +176,24 @@ function exerciseToForm(exercise) {
     referenceCode: exercise.referenceCode || "",
     keywords: Array.isArray(exercise.keywords) ? exercise.keywords.join("\n") : "",
     teacherNotes: exercise.teacherNotes || ""
+  };
+}
+
+function normalizeImportedExercise(exercise) {
+  return {
+    title: String(exercise.title || "").trim(),
+    description: String(exercise.description || "").trim(),
+    language: exercise.language,
+    evaluationType: exercise.evaluationType,
+    starterCode: String(exercise.starterCode || ""),
+    referenceCode: String(exercise.referenceCode || ""),
+    keywords: Array.isArray(exercise.keywords)
+      ? exercise.keywords.map((item) => String(item).trim()).filter(Boolean)
+      : String(exercise.keywords || "")
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+    teacherNotes: String(exercise.teacherNotes || "")
   };
 }
 
@@ -440,6 +498,90 @@ function ProfesorPage({ session, onSessionChange }) {
     navigator.clipboard?.writeText(classroom?.code || "");
   }
 
+  function downloadSampleImportFile() {
+    const fileContent = JSON.stringify(
+      { exercises: sampleImportExercises },
+      null,
+      2
+    );
+    const blob = new Blob([fileContent], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "ejercicios-ejemplo.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImportExercises(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!session?.classroomCode || !session?.teacherPin) {
+      setStatus({ type: "error", text: "Primero debe crear o abrir una sala." });
+      return;
+    }
+
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const importedExercises = Array.isArray(parsed)
+        ? parsed
+        : parsed.exercises;
+
+      if (!Array.isArray(importedExercises) || importedExercises.length === 0) {
+        setStatus({
+          type: "error",
+          text: "El archivo debe tener un arreglo llamado exercises con al menos un ejercicio."
+        });
+        return;
+      }
+
+      let createdCount = 0;
+      const errors = [];
+
+      for (const [index, importedExercise] of importedExercises.entries()) {
+        const payload = normalizeImportedExercise(importedExercise);
+        const response = await createExercise({
+          ...session,
+          payload
+        });
+
+        if (response.ok) {
+          createdCount += 1;
+        } else {
+          errors.push(
+            `Ejercicio ${index + 1}: ${
+              response.errors?.join(" ") || response.message || "No se pudo crear."
+            }`
+          );
+        }
+      }
+
+      await loadTeacherRoom(session);
+      setStatus({
+        type: errors.length > 0 ? "error" : "success",
+        text:
+          errors.length > 0
+            ? `Se crearon ${createdCount}. Errores: ${errors.join(" ")}`
+            : `Se importaron ${createdCount} ejercicios correctamente.`
+      });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        text: "No se pudo leer el archivo. Use un JSON valido con el formato de ejemplo."
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleLogout() {
     onSessionChange(null);
     setClassroom(null);
@@ -563,6 +705,28 @@ function ProfesorPage({ session, onSessionChange }) {
           <Plus size={16} />
           Nuevo ejercicio
         </button>
+
+        <div className="import-actions">
+          <button
+            className="ghost-button full-button"
+            type="button"
+            onClick={downloadSampleImportFile}
+          >
+            <Download size={16} />
+            Descargar formato
+          </button>
+
+          <label className="ghost-button full-button file-button">
+            <Upload size={16} />
+            Importar ejercicios
+            <input
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportExercises}
+              disabled={loading}
+            />
+          </label>
+        </div>
 
         <button className="ghost-button full-button" type="button" onClick={handleLogout}>
           <LogOut size={16} />

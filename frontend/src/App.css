@@ -381,6 +381,20 @@ small {
   width: 100%;
 }
 
+.import-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.file-button {
+  margin: 0;
+  min-height: 44px;
+}
+
+.file-button input {
+  display: none;
+}
+
 .room-code {
   display: grid;
   gap: 10px;
