@@ -165,6 +165,29 @@ function ProfesorPage({ session, onSessionChange }) {
     }
   }, []);
 
+  function isMissingClassroom(response) {
+    return response?.message?.toLowerCase().includes("sala no encontrada");
+  }
+
+  function clearExpiredSession(message) {
+    onSessionChange(null);
+    setClassroom(null);
+    setSubmissions([]);
+    setEditingId(null);
+    setForm(emptyForm);
+    setJoinForm((current) => ({
+      ...current,
+      classroomCode: "",
+      teacherPin: ""
+    }));
+    setStatus({
+      type: "error",
+      text:
+        message ||
+        "La sala guardada ya no existe. Cree una sala nueva para continuar."
+    });
+  }
+
   async function loadTeacherRoom(activeSession = session) {
     if (!activeSession?.classroomCode || !activeSession?.teacherPin) return;
 
@@ -175,6 +198,13 @@ function ProfesorPage({ session, onSessionChange }) {
       const response = await getTeacherClassroom(activeSession);
 
       if (!response.ok) {
+        if (isMissingClassroom(response)) {
+          clearExpiredSession(
+            "La sala anterior ya no existe en el servidor. Cree una sala nueva."
+          );
+          return;
+        }
+
         setStatus({ type: "error", text: response.message || "No se pudo abrir la sala." });
         return;
       }
@@ -335,6 +365,13 @@ function ProfesorPage({ session, onSessionChange }) {
       const response = await action;
 
       if (!response.ok) {
+        if (isMissingClassroom(response)) {
+          clearExpiredSession(
+            "La sala ya no existe en el servidor. Cree una sala nueva y vuelva a publicar el ejercicio."
+          );
+          return;
+        }
+
         setStatus({
           type: "error",
           text: response.errors?.join(" ") || response.message || "No se pudo guardar."
@@ -368,6 +405,13 @@ function ProfesorPage({ session, onSessionChange }) {
       });
 
       if (!response.ok) {
+        if (isMissingClassroom(response)) {
+          clearExpiredSession(
+            "La sala ya no existe en el servidor. Cree una sala nueva."
+          );
+          return;
+        }
+
         setStatus({ type: "error", text: response.message || "No se pudo borrar." });
         return;
       }
