@@ -149,6 +149,7 @@ function ProfesorPage({ session, onSessionChange }) {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -173,6 +174,7 @@ function ProfesorPage({ session, onSessionChange }) {
     onSessionChange(null);
     setClassroom(null);
     setSubmissions([]);
+    setSelectedSubmissionId(null);
     setEditingId(null);
     setForm(emptyForm);
     setJoinForm((current) => ({
@@ -230,6 +232,13 @@ function ProfesorPage({ session, onSessionChange }) {
 
     if (response.ok) {
       setSubmissions(response.submissions || []);
+      setSelectedSubmissionId((currentId) => {
+        if (response.submissions?.some((item) => item.id === currentId)) {
+          return currentId;
+        }
+
+        return response.submissions?.[0]?.id || null;
+      });
     }
   }
 
@@ -259,6 +268,7 @@ function ProfesorPage({ session, onSessionChange }) {
         teacherPin: response.teacherPin
       }));
       setSubmissions([]);
+      setSelectedSubmissionId(null);
       setStatus({
         type: "success",
         text: `Sala creada. Codigo: ${response.classroom.code}. PIN profesor: ${response.teacherPin}.`
@@ -434,6 +444,7 @@ function ProfesorPage({ session, onSessionChange }) {
     onSessionChange(null);
     setClassroom(null);
     setSubmissions([]);
+    setSelectedSubmissionId(null);
     setEditingId(null);
     setForm(emptyForm);
     setJoinForm((current) => ({
@@ -591,15 +602,41 @@ function ProfesorPage({ session, onSessionChange }) {
             <div className="empty-state">Aun no hay entregas.</div>
           )}
 
-          {submissions.slice(0, 8).map((submission) => (
-            <div className="submission-row" key={submission.id}>
+          {submissions.slice(0, 12).map((submission) => (
+            <button
+              className={`submission-row ${
+                selectedSubmissionId === submission.id ? "selected" : ""
+              }`}
+              key={submission.id}
+              type="button"
+              onClick={() => setSelectedSubmissionId(submission.id)}
+            >
               <strong>{submission.studentName}</strong>
               <span>{submission.exerciseTitle}</span>
               <b className={submission.score === 100 ? "ok-text" : "warn-text"}>
                 {submission.score}%
               </b>
-            </div>
+            </button>
           ))}
+
+          {submissions.length > 0 && (
+            <div className="submission-detail">
+              {(() => {
+                const selected =
+                  submissions.find((item) => item.id === selectedSubmissionId) ||
+                  submissions[0];
+
+                return (
+                  <>
+                    <span className="kicker">Respuesta enviada</span>
+                    <h4>{selected.studentName}</h4>
+                    <p>{selected.exerciseTitle}</p>
+                    <pre>{selected.studentCode || "Sin codigo enviado."}</pre>
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </div>
       </aside>
 

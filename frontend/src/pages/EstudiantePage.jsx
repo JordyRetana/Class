@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { LogIn, RefreshCw, Send, Trophy } from "lucide-react";
+import { LogIn, LogOut, RefreshCw, Send, Trophy } from "lucide-react";
 import CodeEditor from "../components/CodeEditor";
 import { evaluateCode, getClassroom, getExercises } from "../services/api";
 
@@ -173,6 +173,20 @@ function EstudiantePage({ session, onSessionChange }) {
     }
   }
 
+  function handleLogout() {
+    onSessionChange(null);
+    setClassroom(null);
+    setExercises([]);
+    setSelectedExerciseId("");
+    setStudentCode("");
+    setResult(null);
+    setStatus(null);
+    setJoinForm((current) => ({
+      ...current,
+      classroomCode: ""
+    }));
+  }
+
   if (!classroom) {
     return (
       <section className="workspace two-columns">
@@ -248,15 +262,22 @@ function EstudiantePage({ session, onSessionChange }) {
             </p>
           </div>
 
-          <button
-            className="ghost-button"
-            onClick={() => loadExercises(classroom.code)}
-            type="button"
-            disabled={loadingExercises}
-          >
-            <RefreshCw size={16} />
-            {loadingExercises ? "Cargando..." : "Actualizar"}
-          </button>
+          <div className="button-row">
+            <button
+              className="ghost-button"
+              onClick={() => loadExercises(classroom.code)}
+              type="button"
+              disabled={loadingExercises}
+            >
+              <RefreshCw size={16} />
+              {loadingExercises ? "Cargando..." : "Actualizar"}
+            </button>
+
+            <button className="ghost-button" onClick={handleLogout} type="button">
+              <LogOut size={16} />
+              Cerrar sesion
+            </button>
+          </div>
         </div>
 
         <label>
