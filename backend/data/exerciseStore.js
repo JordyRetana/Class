@@ -299,39 +299,7 @@ function listSubmissions(code) {
 }
 
 function seedExamples() {
-  if (classrooms.size > 0) return;
-
-  const { classroom } = createClassroom({
-    code: "CLASE1",
-    teacherPin: "1234",
-    name: "Clase demo"
-  });
-
-  createExercise(classroom.code, {
-    title: "JavaScript: mostrar una suma",
-    description:
-      "Escriba un programa que muestre en consola el resultado de sumar 2 + 3.",
-    language: "javascript",
-    evaluationType: "same_output",
-    starterCode: "// Escriba su solucion aqui\n",
-    referenceCode: "console.log(2 + 3);",
-    keywords: [],
-    teacherNotes: "Ejemplo de evaluacion por mismo resultado."
-  });
-
-  createExercise(classroom.code, {
-    title: "HTML: tarjeta basica",
-    description:
-      "Cree una tarjeta con un h1 que diga Bienvenidos y un parrafo que diga Curso de programacion.",
-    language: "html",
-    evaluationType: "contains_keywords",
-    starterCode:
-      '<!-- Escriba su HTML aqui -->\n<div class="card">\n\n</div>',
-    referenceCode:
-      '<div class="card">\n  <h1>Bienvenidos</h1>\n  <p>Curso de programacion</p>\n</div>',
-    keywords: ["<h1>", "Bienvenidos", "<p>", "Curso de programacion"],
-    teacherNotes: "Evalua por fragmentos clave."
-  });
+  return classrooms.size;
 }
 
 function validateExercisePayload(data) {

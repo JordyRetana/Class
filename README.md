@@ -114,15 +114,6 @@ Resumen:
 6. El estudiante resuelve y envia.
 7. El profesor presiona Actualizar panel y ve las entregas recientes.
 
-## Sala demo
-
-La primera vez que se ejecuta el backend se crea una sala de prueba:
-
-```txt
-Codigo estudiante: CLASE1
-PIN profesor: 1234
-```
-
 ## Tipos de evaluacion
 
 - Mismo resultado: ejecuta la solucion del profesor y la del estudiante. En este MVP solo funciona con JavaScript.

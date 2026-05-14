@@ -62,7 +62,10 @@ function EstudiantePage({ session, onSessionChange }) {
       });
       await loadExercises(activeSession.classroomCode);
     } catch (error) {
-      setStatus({ type: "error", text: "No se pudo conectar con el backend." });
+      setStatus({
+        type: "error",
+        text: "No se pudo conectar con el backend. Revise que VITE_API_URL apunte a la URL publica de Render."
+      });
     } finally {
       setLoadingExercises(false);
     }
@@ -115,7 +118,7 @@ function EstudiantePage({ session, onSessionChange }) {
     } catch (error) {
       setStatus({
         type: "error",
-        text: "No se pudo conectar con el backend."
+        text: "No se pudo conectar con el backend. Revise que VITE_API_URL apunte a la URL publica de Render."
       });
     } finally {
       setLoadingExercises(false);
@@ -163,7 +166,7 @@ function EstudiantePage({ session, onSessionChange }) {
     } catch (error) {
       setStatus({
         type: "error",
-        text: "No se pudo conectar con el backend para evaluar."
+        text: "No se pudo conectar con el backend para evaluar. Revise la URL publica del backend."
       });
     } finally {
       setLoadingEvaluation(false);
@@ -207,7 +210,7 @@ function EstudiantePage({ session, onSessionChange }) {
                     classroomCode: event.target.value.toUpperCase()
                   }))
                 }
-                placeholder="CLASE1"
+                placeholder="Codigo del profesor"
               />
             </label>
           </div>
@@ -221,11 +224,11 @@ function EstudiantePage({ session, onSessionChange }) {
         </form>
 
         <section className="panel compact-panel">
-          <span className="kicker">Demo rapida</span>
-          <h2>Sala de prueba</h2>
+          <span className="kicker">Acceso privado</span>
+          <h2>Use el codigo de su profesor</h2>
           <p>
-            Si no ha creado una sala todavia, puede probar con codigo CLASE1.
-            El profesor demo usa PIN 1234.
+            Cada sala tiene un codigo propio. Pidalo al profesor antes de
+            entrar.
           </p>
         </section>
       </section>

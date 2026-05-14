@@ -433,7 +433,7 @@ function ProfesorPage({ session, onSessionChange }) {
                     classroomCode: event.target.value.toUpperCase()
                   }))
                 }
-                placeholder="CLASE1"
+                placeholder="Codigo de sala"
               />
             </label>
 
@@ -447,7 +447,7 @@ function ProfesorPage({ session, onSessionChange }) {
                     teacherPin: event.target.value
                   }))
                 }
-                placeholder="1234"
+                placeholder="PIN privado"
                 type="password"
               />
             </label>
